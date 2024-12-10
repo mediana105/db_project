@@ -45,7 +45,7 @@ class Book_x_Sale(BaseModel):
     quantity = IntegerField()
 
 
-# get phone numbers of Warehouses in specific city
+# Получение всех номеров телефонов для складов в конкретном городе
 def get_phone_numbers(city: str) -> list:
     numbers: list = []
     for warehouse in Warehouse.select().where(Warehouse.city == city):
@@ -56,25 +56,25 @@ def get_phone_numbers(city: str) -> list:
 # print(get_phone_numbers('Бебринск'))
 
 
-# instert new genre
+# Добавление нового жанра
 def insert_genre(genre_name: str):
     Genre.create(name=genre_name)
 
 # insert_genre('Подростковая проза')
 
 
-# update address of publishing house
+# Обновление адреса издательства
 def update_address(new_address: str, publishing_name: str):
     Publishing.update(address=new_address).where(Publishing.name==publishing_name).execute()
 
 # update_address('ул. Карла Маркса, 19', 'Калининградская книга')
 
 
-# top selling books
+# Топ книг по количеству продаж
 def get_top_books():
     query = (Book
              .select(Book.name, fn.COALESCE(fn.SUM(Book_x_Sale.quantity), 0).alias('total_quantity'), 
-                    fn.DENSE_RANK().over(order_by=[fn.COALESCE(fn.SUM(Book_x_Sale.quantity), 0)]).alias('place'))
+                    fn.DENSE_RANK().over(order_by=[fn.COALESCE(fn.SUM(Book_x_Sale.quantity), 0).desc()]).alias('place'))
             .join(Book_x_Sale, JOIN.LEFT_OUTER, on=(Book.book_id==Book_x_Sale.book_id))
             .group_by(Book.name)
             .order_by(fn.COALESCE(fn.SUM(Book_x_Sale.quantity), 0).desc()))
