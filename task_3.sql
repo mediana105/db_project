@@ -1,3 +1,5 @@
+CREATE DATABASE bookstore_db;
+\c bookstore_db;
 CREATE SCHEMA bookstore;
 
 -- Table Publishing (издательство)
