@@ -1,4 +1,4 @@
--- update warehouse stock when row into Book_x_Sale is added && trigger on Book_x_Sale
+-- Триггер над Book_x_Sale, уменьшающий текущую заполненность склада, если добавляется новый заказ
 CREATE OR REPLACE FUNCTION bookstore.update_current_stock()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -8,8 +8,8 @@ BEGIN
         WHERE warehouse_id = 
         (
             SELECT warehouse_id 
-            FROM bookstore.Book_x_Sale
-            WHERE sale_id = NEW.sale_id AND book_id=NEW.book_id 
+            FROM bookstore.Sale
+            WHERE sale_id = NEW.sale_id
         );
 
     RETURN NEW;
@@ -22,7 +22,7 @@ FOR EACH ROW
 EXECUTE FUNCTION bookstore.update_current_stock();
 
 
--- prohibits normal update Buyer table && trigger on Buyer
+-- Триггер над Buyer, запрещающий стандартное обновление таблицы Buyer
 CREATE OR REPLACE FUNCTION bookstore.update_buyer()
 RETURNS TRIGGER AS $$
 BEGIN
