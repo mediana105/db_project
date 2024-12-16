@@ -34,7 +34,7 @@ WITH sum_by_year AS (
     GROUP BY year
 )
 
-SELECT year, 
+SELECT year::INTEGER, 
         total_price, 
         CASE WHEN prev_year = year - 1
             THEN total_price - prev_price 
@@ -55,7 +55,6 @@ FROM (
 -- эти доставки от всех доставок с этого склада
 WITH delivery_in_sale AS (
     SELECT  w.warehouse_id AS w_id, 
-            s.delivery_service_id AS d_id,
             COUNT(*) AS delivery_cnt,
             d.name as delivery_name
     FROM bookstore.Warehouse AS w
@@ -67,7 +66,6 @@ WITH delivery_in_sale AS (
 SELECT w_id, delivery_cnt, ROUND(delivery_cnt * 100 / all_deliveries_cnt::NUMERIC, 2) AS percent
 FROM (
     SELECT  w_id,
-            d_id, 
             delivery_name,
             delivery_cnt,
             SUM(delivery_cnt) OVER (PARTITION BY w_id) as all_deliveries_cnt,
@@ -116,7 +114,7 @@ GROUP BY buyer_id, buyer_name, genre_sales_cnt;
 WITH sales_sum AS (
     SELECT  buyer.buyer_id AS buyer_id,
             buyer.name AS buyer_name,
-            SUM (bs.sale_price * bs.quantity) AS buyer_price
+            SUM (bs.sale_price * bs.quantity) AS buyer_purchase
     FROM bookstore.Buyer AS buyer
     LEFT JOIN bookstore.Sale AS s ON buyer.buyer_id = s.buyer_id
     LEFT JOIN bookstore.Book_x_sale AS bs ON s.sale_id = bs.sale_id
@@ -132,8 +130,8 @@ SELECT buyer_id,
 FROM (
     SELECT  buyer_id,
             buyer_name,
-            CASE WHEN buyer_price IS NULL THEN 0 ELSE buyer_price END AS buyer_purchase_price,
-            first_value(buyer_price) OVER (ORDER BY buyer_price DESC NULLS LAST) AS max_purchase_price
+            CASE WHEN buyer_purchase IS NULL THEN 0 ELSE buyer_purchase END AS buyer_purchase_price,
+            first_value(buyer_purchase) OVER (ORDER BY buyer_purchase DESC NULLS LAST) AS max_purchase_price
     FROM sales_sum
 ) AS sum_and_first_value
 ORDER BY buyer_purchase_price;
